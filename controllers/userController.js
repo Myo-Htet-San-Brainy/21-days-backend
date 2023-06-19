@@ -24,6 +24,35 @@ const createUser = async (req, res) => {
     .json({ data: user, message: "Show user habit feed." });
 };
 
+const showCurrentUser = async (req, res) => {
+  res.status(StatusCodes.OK).json({ data: {}, message: "Current User" });
+};
+
+const deleteCurrentUser = async (req, res) => {
+  res
+    .status(StatusCodes.OK)
+    .json({ data: {}, message: "Deleted Current User" });
+};
+
+const updateCurrentUser = async (req, res) => {
+  res
+    .status(StatusCodes.OK)
+    .json({ data: {}, message: "Updated Current User" });
+};
+
+const showLeaderBoard = async (req, res) => {
+  res.status(StatusCodes.OK).json({ data: {}, message: "LeaderBoard" });
+};
+
+const getSingleUser = async (req, res) => {
+  res.status(StatusCodes.OK).json({ data: {}, message: "Single User" });
+};
+
 module.exports = {
   createUser,
+  showCurrentUser,
+  deleteCurrentUser,
+  updateCurrentUser,
+  showLeaderBoard,
+  getSingleUser,
 };

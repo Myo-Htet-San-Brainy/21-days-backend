@@ -29,13 +29,6 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: [true, "Please provide facebookId."],
   },
-  //pass reset part
-  resetPasswordToken: {
-    type: String,
-  },
-  resetPasswordTokenExpirationDate: {
-    type: Date,
-  },
 });
 
 module.exports = mongoose.model("User", userSchema);

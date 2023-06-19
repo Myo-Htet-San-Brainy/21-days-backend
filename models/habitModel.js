@@ -36,10 +36,20 @@ const habitSchema = new mongoose.Schema({
       message: "{VALUE} is not supported.",
     },
   },
-  createdBy: {
-    type: mongoose.Types.ObjectId,
-    required: [true, "Please provide habit creator."],
-    ref: "User",
+  user: {
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      required: [true, "Please provide the habit creator."],
+      ref: "User",
+    },
+    username: {
+      type: String,
+      required: [true, "Please provide the habit creator name."],
+    },
+    userImage: {
+      type: String,
+      required: [true, "Please provide the habit creator image."],
+    },
   },
 });
 

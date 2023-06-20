@@ -20,10 +20,14 @@ const userSchema = new mongoose.Schema({
     maxLength: 100,
     time: true,
     default: "no bio",
+    //required is just here to check for null
+    required: [true, "Null value is not allowed for bio field."],
   },
   habitsBuilt: {
     type: Number,
     default: 0,
+    //required is just here to check for null
+    required: [true, "Null value is not allowed for habitsBuilt field."],
   },
   facebookId: {
     type: String,

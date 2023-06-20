@@ -16,8 +16,9 @@ const authorizeUser = require("../middleware/authorization");
 
 router.post("/createUser", authorizationForCreateUser, createUser);
 router.get("/showCurrentUser", authorizeUser, showCurrentUser);
-router.delete("/:id", authorizeUser, deleteCurrentUser);
-router.patch("/:id", authorizeUser, updateCurrentUser);
+router.get("/showLeaderBoard", authorizeUser, showLeaderBoard);
+router.delete("/deleteCurrentUser", authorizeUser, deleteCurrentUser);
+router.patch("/updateCurrentUser", authorizeUser, updateCurrentUser);
 router.get("/:id", authorizeUser, getSingleUser);
 
 module.exports = router;

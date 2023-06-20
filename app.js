@@ -17,6 +17,7 @@ const notFound = require("./middleware/notFound");
 const errorHandler = require("./middleware/errorHandler");
 const authorizeUser = require("./middleware/authorization");
 const User = require("./models/userModel");
+const Habit = require("./models/habitModel");
 const RefreshToken = require("./models/refreshTokenModel");
 
 //router imports
@@ -45,6 +46,7 @@ app.get("/", async (req, res) => {
 app.delete("/api/v1/deleteAll", async (req, res) => {
   //delete all
   await User.deleteMany({});
+  await Habit.deleteMany({});
   await RefreshToken.deleteMany({});
   //remove cookies
   res.cookie("accessToken", "logout", {

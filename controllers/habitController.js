@@ -8,7 +8,9 @@ const customError = require("../errors");
 const checkOwner = require("../utils/checkOwner");
 
 const getAllHabits = async (req, res) => {
-  const habits = await Habit.find({}).select("-timeToSendReminder");
+  const habits = await Habit.find({}).select(
+    "-timeToSendReminder -user.userEmail"
+  );
   res.status(StatusCodes.OK).json({ data: habits, message: "All Habits" });
 };
 
@@ -34,13 +36,20 @@ const createHabit = async (req, res) => {
     userId: user._id,
     username: user.username,
     userImage: user.image,
+    userEmail: user.email,
   };
   //add completion date
-  const startDateObj = new Date(req.body.startDate); //milliseconds for 20 days
+  const startDateObj = new Date(req.body.startDate);
   const completionDateObj = new Date(
-    startDateObj.getTime() + 20 * 24 * 60 * 60 * 1000
+    startDateObj.getTime() + 20 * 24 * 60 * 60 * 1000 //milliseconds for 20 days
   );
   req.body.completionDate = completionDateObj;
+  req.body.startDate = startDateObj;
+  // console.log(
+  //   `completion: ${typeof req.body.completionDate}, ${req.body.completionDate}`
+  // );
+  // console.log(`start: ${typeof req.body.startDate}, ${req.body.startDate}`);
+
   //create Habit
   await Habit.create(req.body);
   res.status(StatusCodes.CREATED).json({ message: "Created A Habit" });
@@ -62,6 +71,7 @@ const deleteHabit = async (req, res) => {
   }
   //check permission
   checkOwner(req.user, habit.user.userId);
+
   await Habit.findByIdAndDelete(habit._id);
   res.status(StatusCodes.OK).json({ message: "Deleted A Habit" });
 };

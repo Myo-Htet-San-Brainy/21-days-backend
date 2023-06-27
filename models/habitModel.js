@@ -19,14 +19,6 @@ const habitSchema = new mongoose.Schema({
     type: Date,
     required: [true, "Please provide habit completion date."],
   },
-  timeToSendReminder: {
-    type: String,
-    required: [true, "Please provide habit start date."],
-    enum: {
-      values: ["6am", "12pm", "6pm"],
-      message: "{VALUE} is not supported.",
-    },
-  },
   habitStatus: {
     type: String,
     required: [true, "Habit Status can't be null"],
@@ -49,6 +41,17 @@ const habitSchema = new mongoose.Schema({
     userImage: {
       type: String,
       required: [true, "Please provide the habit creator image."],
+    },
+    userEmail: {
+      type: String,
+    },
+  },
+  timeToSendReminder: {
+    type: String,
+    required: [true, "Please provide habit start date."],
+    enum: {
+      values: ["6am", "12pm", "6pm"],
+      message: "{VALUE} is not supported.",
     },
   },
 });

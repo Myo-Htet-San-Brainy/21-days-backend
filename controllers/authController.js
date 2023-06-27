@@ -1,69 +1,204 @@
-//packages
-const axios = require("axios");
-const { StatusCodes } = require("http-status-codes");
-const jwt = require("jsonwebtoken");
-//imports
 const User = require("../models/userModel");
 const RefreshToken = require("../models/refreshTokenModel");
+const { StatusCodes } = require("http-status-codes");
+const customError = require("../errors");
+const createHash = require("../utils/createHash");
+const sendVerificationEmail = require("../utils/Emails/SendVerificationEmail");
+const sendResetPasswordEmail = require("../utils/Emails/SendPasswordReset");
 const { attachCookiesToResponse } = require("../utils/jwt");
 const createUserPayload = require("../utils/createUserPayload");
+const crypto = require("crypto");
 
-const facebookLogin = async (req, res, next) => {
-  //getting fbId using accessTokenForUser
-  const { accessTokenForUser } = req.body;
-  const fbRes = await axios.get(
-    `https://graph.facebook.com/v12.0/me?fields=id&access_token=${accessTokenForUser}`
-  );
-  const facebookId = fbRes.data.id;
-  // console.log(`facebookId: ${facebookId}`);
-  //differentiating Login and Register
-  const existingUser = await User.findOne({
-    facebookId: facebookId,
+const register = async (req, res) => {
+  const { email, username, password } = req.body;
+
+  //extra check, we already check on schema level with 'unique'
+  const emailAlreadyExists = await User.findOne({ email });
+  if (emailAlreadyExists) {
+    throw new customError.BadRequest("Email already exists");
+  }
+
+  const verificationToken = crypto.randomBytes(40).toString("hex");
+
+  const user = await User.create({
+    username,
+    email,
+    password,
+    verificationToken,
   });
-  // console.log(`existingUser: ${existingUser}`);
+  const origin = "http://localhost:3000";
 
-  if (existingUser) {
-    login(req, res, next, existingUser);
-  } else {
-    register(req, res, next, facebookId);
-  }
+  await sendVerificationEmail(
+    user.username,
+    user.email,
+    user.verificationToken,
+    origin
+  );
+  // send verification token back only while testing in postman!!!
+  res.status(StatusCodes.CREATED).json({
+    message: "Success! Please check your email to verify account",
+  });
 };
 
-const login = async (req, res, next, existingUser) => {
-  try {
-    const refreshTokenDoc = await RefreshToken.findOne({
-      user: existingUser._id,
-    });
-
-    const { isValid, refreshToken } = refreshTokenDoc;
-    //isValid check is here just because if sites admin become sus of a user, they can change this 'isValid' to false and that one user wouldn't be able to login forever
-    if (!isValid) {
-      throw new CustomError.UnauthenticatedError("Invalid Credentials");
+const sendVerificationEmailAgain = async (req, res) => {
+  const { email } = req.body;
+  const verificationToken = crypto.randomBytes(40).toString("hex");
+  const user = await User.findOneAndUpdate(
+    { email },
+    {
+      verificationToken,
+    },
+    {
+      new: true,
     }
-    //giving authorization to user
-    const userPayload = createUserPayload(existingUser);
-    attachCookiesToResponse(res, userPayload, refreshToken);
-    res.status(StatusCodes.OK).json({ message: "Show User Habit feed." });
-  } catch (error) {
-    next(error);
+  );
+  if (!user) {
+    throw new customError.BadRequest(
+      "There is no account with such email. Please sign up(register) instead."
+    );
   }
+  if (user.isVerified) {
+    throw new customError.BadRequest(
+      "This email address is already verified. Try to log in."
+    );
+  }
+  const origin = "http://localhost:3000";
+  await sendVerificationEmail(
+    user.username,
+    user.email,
+    user.verificationToken,
+    origin
+  );
+  res.status(StatusCodes.OK).json({
+    message:
+      "Success! Please check your email inbox to for email verification link",
+  });
 };
 
-const register = async (req, res, next, facebookId) => {
-  try {
-    //setup fbId cookie
-    const fbIdJWT = jwt.sign(facebookId, process.env.JWT_SECRET);
-    res.cookie("namasamethe", fbIdJWT, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      signed: true,
-      maxAge: 60 * 60 * 1000,
-    });
-    //res
-    res.status(StatusCodes.OK).json({ message: "Ask user info." });
-  } catch (error) {
-    next(error);
+const verifyEmail = async (req, res) => {
+  const { verificationToken, email } = req.body;
+  const user = await User.findOne({ email });
+
+  if (!user) {
+    throw new customError.Unauthenticated("Verification Failed");
   }
+
+  if (user.verificationToken !== verificationToken) {
+    throw new customError.Unauthenticated("Verification Failed");
+  }
+
+  (user.isVerified = true), (user.verified = Date.now());
+  user.verificationToken = "";
+
+  await user.save();
+
+  res.status(StatusCodes.OK).json({ message: "Email Verified" });
+};
+
+const login = async (req, res) => {
+  const { email, password } = req.body;
+
+  if (!email || !password) {
+    throw new customError.BadRequest("Please provide email and password");
+  }
+  const user = await User.findOne({ email });
+
+  if (!user) {
+    throw new customError.Unauthenticated("Invalid Credentials");
+  }
+  const isPasswordCorrect = await user.comparePassword(password);
+
+  if (!isPasswordCorrect) {
+    throw new customError.Unauthenticated("Invalid Credentials");
+  }
+  if (!user.isVerified) {
+    throw new customError.Unauthenticated("Please verify your email");
+  }
+  //All the code below is for authorization
+  const tokenUser = createUserPayload(user);
+
+  // create refresh token
+  let refreshToken = "";
+  // check for existing token
+  const existingToken = await RefreshToken.findOne({ user: user._id });
+
+  if (existingToken) {
+    const { isValid } = existingToken;
+    //isValid check is here just because if sites admin become sus of a user they can change this 'isValid' to false and that one user wouldn't be able to login forever
+    if (!isValid) {
+      throw new customError.Unauthenticated("Invalid Credentials");
+    }
+    refreshToken = existingToken.refreshToken;
+    attachCookiesToResponse(res, tokenUser, refreshToken);
+    res.status(StatusCodes.OK).json({ message: "User logged in" });
+    return;
+  }
+
+  refreshToken = crypto.randomBytes(40).toString("hex");
+  const userAgent = req.headers["user-agent"];
+  const ip = req.ip;
+  const userToken = { refreshToken, ip, userAgent, user: user._id };
+
+  await RefreshToken.create(userToken);
+
+  attachCookiesToResponse(res, tokenUser, refreshToken);
+
+  res.status(StatusCodes.OK).json({ message: "User logged in" });
+};
+
+const forgotPassword = async (req, res) => {
+  const { email } = req.body;
+  if (!email) {
+    throw new customError.BadRequest("Please provide valid email");
+  }
+
+  const user = await User.findOne({ email });
+
+  if (user) {
+    const passwordToken = crypto.randomBytes(70).toString("hex");
+    // send email
+    const origin = "http://localhost:3000";
+    await sendResetPasswordEmail(
+      user.username,
+      user.email,
+      passwordToken,
+      origin
+    );
+
+    const tenMinutes = 1000 * 60 * 10;
+    const passwordTokenExpirationDate = new Date(Date.now() + tenMinutes);
+
+    user.passwordToken = createHash(passwordToken);
+    user.passwordTokenExpirationDate = passwordTokenExpirationDate;
+    await user.save();
+  }
+
+  res
+    .status(StatusCodes.OK)
+    .json({ message: "Please check your email inbox for password reset link" });
+};
+const resetPassword = async (req, res) => {
+  const { token, email, password } = req.body;
+  if (!token || !email || !password) {
+    throw new customError.BadRequest("Please provide all values");
+  }
+  const user = await User.findOne({ email });
+
+  if (user) {
+    const currentDate = new Date();
+
+    if (
+      user.passwordToken === createHash(token) &&
+      user.passwordTokenExpirationDate > currentDate
+    ) {
+      user.password = password;
+      user.passwordToken = null;
+      user.passwordTokenExpirationDate = null;
+      await user.save();
+    }
+  }
+
+  res.status(StatusCodes.OK).json({ message: "Password reset successful" });
 };
 
 const logout = async (req, res) => {
@@ -81,6 +216,11 @@ const logout = async (req, res) => {
 };
 
 module.exports = {
-  facebookLogin,
+  register,
+  login,
   logout,
+  verifyEmail,
+  forgotPassword,
+  resetPassword,
+  sendVerificationEmailAgain,
 };

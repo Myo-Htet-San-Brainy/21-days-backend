@@ -8,10 +8,23 @@ const rateLimiter = rateLimit({
 });
 
 //imports
-const { facebookLogin, logout } = require("../controllers/authController");
+const {
+  register,
+  login,
+  logout,
+  verifyEmail,
+  forgotPassword,
+  resetPassword,
+  sendVerificationEmailAgain,
+} = require("../controllers/authController");
 const authorizeUser = require("../middleware/authorization");
 
-router.post("/facebookLogin", rateLimiter, facebookLogin);
+router.post("/register", register);
+router.post("/sendVerificationEmailAgain", sendVerificationEmailAgain);
+router.post("/login", rateLimiter, login);
 router.delete("/logout", authorizeUser, logout);
+router.post("/verify-email", verifyEmail);
+router.post("/reset-password", resetPassword);
+router.post("/forgot-password", forgotPassword);
 
 module.exports = router;

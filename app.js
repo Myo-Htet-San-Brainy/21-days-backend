@@ -10,6 +10,8 @@ const helmet = require("helmet");
 const xss = require("xss-clean");
 const cors = require("cors");
 const mongoSanitize = require("express-mongo-sanitize");
+const cloudinary = require("cloudinary").v2;
+const fileUpload = require("express-fileupload");
 
 //imports
 const connectDB = require("./db/connectDb");
@@ -19,6 +21,11 @@ const authorizeUser = require("./middleware/authorization");
 const User = require("./models/userModel");
 const Habit = require("./models/habitModel");
 const RefreshToken = require("./models/refreshTokenModel");
+const {
+  sixAMCron,
+  twelvePMCron,
+  sixPMCron,
+} = require("./cron/checkAndMessageCron");
 
 //router imports
 const authRouter = require("./routers/authRouter");
@@ -34,14 +41,21 @@ app.use(xss());
 app.use(mongoSanitize());
 app.use(express.json());
 app.use(cookieParser(process.env.JWT_SECRET));
+app.use(
+  fileUpload({
+    useTempFiles: true,
+  })
+);
+cloudinary.config({
+  cloud_name: "dhwwdk7uq",
+  api_key: "517523146221913",
+  api_secret: "FhiJvs14ht4YLtiikD7Sma0U89o",
+});
 
 //routes
 app.use("/api/v1/habit/", habitRouter);
 app.use("/api/v1/user/", userRouter);
 app.use("/api/v1/auth/", authRouter);
-app.get("/", async (req, res) => {
-  res.send("hi mom");
-});
 //temp routes
 app.delete("/api/v1/deleteAll", async (req, res) => {
   //delete all
@@ -72,6 +86,10 @@ const start = async () => {
     app.listen(port, () => {
       console.log(`Server is listening on port ${port}...`);
     });
+    //run crons
+    sixAMCron.start();
+    twelvePMCron.start();
+    sixPMCron.start();
   } catch (error) {
     console.log(error);
   }

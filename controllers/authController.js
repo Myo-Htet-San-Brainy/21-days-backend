@@ -36,7 +36,9 @@ const register = async (req, res) => {
   );
   // send verification token back only while testing in postman!!!
   res.status(StatusCodes.CREATED).json({
-    message: "Success! Please check your email to verify account",
+    message:
+      "Success! Please check your email inbox for email verification link",
+    verificationToken,
   });
 };
 
@@ -71,7 +73,8 @@ const sendVerificationEmailAgain = async (req, res) => {
   );
   res.status(StatusCodes.OK).json({
     message:
-      "Success! Please check your email inbox to for email verification link",
+      "Success! Please check your email inbox for email verification link",
+    verificationToken,
   });
 };
 
@@ -153,9 +156,9 @@ const forgotPassword = async (req, res) => {
   }
 
   const user = await User.findOne({ email });
-
+  //For production, put pswToken back in if block below
+  const passwordToken = crypto.randomBytes(70).toString("hex");
   if (user) {
-    const passwordToken = crypto.randomBytes(70).toString("hex");
     // send email
     const origin = "http://localhost:3000";
     await sendResetPasswordEmail(
@@ -173,9 +176,10 @@ const forgotPassword = async (req, res) => {
     await user.save();
   }
 
-  res
-    .status(StatusCodes.OK)
-    .json({ message: "Please check your email inbox for password reset link" });
+  res.status(StatusCodes.OK).json({
+    message: "Please check your email inbox for password reset link",
+    passwordToken,
+  });
 };
 const resetPassword = async (req, res) => {
   const { token, email, password } = req.body;

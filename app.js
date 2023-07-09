@@ -39,7 +39,8 @@ app.use(helmet());
 // app.use(cors());
 app.use(
   cors({
-    origin: "http://localhost:8080",
+    origin:
+      "https://64aa759be061cf0008d73632--dancing-sunflower-d8c172.netlify.app",
     credentials: true,
   })
 );

@@ -38,6 +38,7 @@ app.set("trust proxy", 1);
 app.use(helmet());
 app.use(
   cors({
+    origin: "*",
     credentials: true,
     exposedHeaders: ["set-cookie"],
   })

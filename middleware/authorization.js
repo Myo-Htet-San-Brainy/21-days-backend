@@ -4,8 +4,6 @@ const { isTokenValid, attachCookiesToResponse } = require("../utils/jwt");
 
 const authorizeUser = async (req, res, next) => {
   const { refreshToken, accessToken } = req.signedCookies;
-  console.log(accessToken);
-  console.log(refreshToken);
 
   try {
     if (accessToken) {

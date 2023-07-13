@@ -104,7 +104,7 @@ const uploadMyImage = async (req, res) => {
       folder: "21daysUserImages",
     }
   );
-  res.json({ data: result.secure_url });
+  res.status(StatusCodes.OK).json({ data: result.secure_url });
 };
 
 module.exports = {

@@ -13,7 +13,8 @@ const userSchema = new mongoose.Schema({
   image: {
     type: String,
     time: true,
-    default: "user.jpeg",
+    default:
+      "https://res.cloudinary.com/dhwwdk7uq/image/upload/v1689238366/21daysUserImages/tmp-2-1689238361206_jhx42p.png",
     //required is just here to check for null
     required: [true, "Null value is not allowed for image field."],
   },

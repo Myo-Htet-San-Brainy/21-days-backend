@@ -11,7 +11,9 @@ const authorizeUser = async (req, res, next) => {
       req.user = userObj;
       return next();
     }
+    // console.log("before validating refresh token");
     const payload = isTokenValid(refreshToken);
+    // console.log(payload);
 
     const existingToken = await RefreshToken.findOne({
       user: payload.user.userId,
@@ -22,11 +24,7 @@ const authorizeUser = async (req, res, next) => {
       throw new customError.Unauthorized("Authorization Invalid");
     }
 
-    attachCookiesToResponse({
-      res,
-      user: payload.user,
-      refreshToken: existingToken.refreshToken,
-    });
+    attachCookiesToResponse(res, payload.user, existingToken.refreshToken);
 
     req.user = payload.user;
     next();

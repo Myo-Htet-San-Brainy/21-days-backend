@@ -219,6 +219,19 @@ const logout = async (req, res) => {
   res.status(StatusCodes.OK).json({ message: "user logged out!" });
 };
 
+const isUserLoggedIn = async (req, res) => {
+  const { refreshToken, accessToken } = req.signedCookies;
+  if (accessToken) {
+    res.status(StatusCodes.OK).json({ isUserLoggedIn: true });
+    return;
+  }
+  if (refreshToken) {
+    res.status(StatusCodes.OK).json({ isUserLoggedIn: true });
+    return;
+  }
+  res.status(StatusCodes.OK).json({ isUserLoggedIn: false });
+};
+
 module.exports = {
   register,
   login,
@@ -227,4 +240,5 @@ module.exports = {
   forgotPassword,
   resetPassword,
   sendVerificationEmailAgain,
+  isUserLoggedIn,
 };

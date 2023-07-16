@@ -16,6 +16,7 @@ const {
   forgotPassword,
   resetPassword,
   sendVerificationEmailAgain,
+  isUserLoggedIn,
 } = require("../controllers/authController");
 const authorizeUser = require("../middleware/authorization");
 
@@ -26,5 +27,6 @@ router.delete("/logout", authorizeUser, logout);
 router.post("/verify-email", verifyEmail);
 router.post("/reset-password", resetPassword);
 router.post("/forgot-password", forgotPassword);
+router.get("/isUserLoggedIn", isUserLoggedIn);
 
 module.exports = router;

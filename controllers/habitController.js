@@ -16,7 +16,11 @@ const getAllHabits = async (req, res) => {
   habit = habit.skip(skip).limit(limit);
 
   const habits = await habit;
-  res.status(StatusCodes.OK).json({ count: habits.length, data: habits });
+  const totalHabits = await Habit.countDocuments({});
+  const totalNoOfPages = Math.ceil(totalHabits / limit);
+  res
+    .status(StatusCodes.OK)
+    .json({ totalHabits, totalNoOfPages, data: habits });
 };
 
 const createHabit = async (req, res) => {

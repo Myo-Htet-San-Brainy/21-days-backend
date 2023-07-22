@@ -11,10 +11,16 @@ const {
   showLeaderBoard,
   getSingleUser,
   uploadMyImage,
+  showCurrentUserAndItsHabits,
 } = require("../controllers/userController");
 const authorizeUser = require("../middleware/authorization");
 
 router.get("/showCurrentUser", authorizeUser, showCurrentUser);
+router.get(
+  "/showCurrentUserAndItsHabits",
+  authorizeUser,
+  showCurrentUserAndItsHabits
+);
 router.get("/showLeaderBoard", authorizeUser, showLeaderBoard);
 router.delete("/deleteCurrentUser", authorizeUser, deleteCurrentUser);
 router.patch("/updateCurrentUser", authorizeUser, updateCurrentUser);

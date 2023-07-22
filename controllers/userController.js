@@ -17,6 +17,18 @@ const showCurrentUser = async (req, res) => {
   res.status(StatusCodes.OK).json({ data: user, message: "Current User" });
 };
 
+const showCurrentUserAndItsHabits = async (req, res) => {
+  const user = await User.findById(req.user.userId).select(
+    "username image bio habitsBuilt email _id"
+  );
+  const habits = await Habit.find({ "user.userId": req.user.userId }).select(
+    "-user"
+  );
+  res
+    .status(StatusCodes.OK)
+    .json({ user, habits, message: "Current User With Its Habits" });
+};
+
 const deleteCurrentUser = async (req, res) => {
   //delete current user
   const user = await User.findByIdAndDelete(req.user.userId).select("_id");
@@ -115,6 +127,7 @@ module.exports = {
   showLeaderBoard,
   getSingleUser,
   uploadMyImage,
+  showCurrentUserAndItsHabits,
 };
 
 // const createUser = async (req, res) => {

@@ -8,7 +8,6 @@ const habitSchema = new mongoose.Schema({
   },
   habitDescription: {
     type: String,
-    required: [true, "Habit Description can't be null"],
     default: "Description about the habit",
   },
   startDate: {

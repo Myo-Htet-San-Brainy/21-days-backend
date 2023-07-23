@@ -12,19 +12,17 @@ const userSchema = new mongoose.Schema({
   },
   image: {
     type: String,
-    time: true,
     default:
       "https://res.cloudinary.com/dhwwdk7uq/image/upload/v1689238366/21daysUserImages/tmp-2-1689238361206_jhx42p.png",
     //required is just here to check for null
-    required: [true, "Null value is not allowed for image field."],
+    // required: [true, "Null value is not allowed for image field."],
   },
   bio: {
     type: String,
     maxLength: 100,
-    time: true,
     default: "no bio",
     //required is just here to check for null
-    required: [true, "Null value is not allowed for bio field."],
+    // required: [true, "Null value is not allowed for bio field."],
   },
   habitsBuilt: {
     type: Number,

@@ -49,22 +49,21 @@ const deleteCurrentUser = async (req, res) => {
 };
 
 const updateCurrentUser = async (req, res) => {
-  const { username, bio, email, image } = req.body;
+  const { username, bio, image } = req.body;
   //update current user
   const user = await User.findByIdAndUpdate(
     req.user.userId,
-    { username, bio, email, image },
+    { username, bio, image },
     {
       runValidators: true,
       new: true,
     }
-  ).select("username image bio habitsBuilt email _id");
+  ).select("username image bio habitsBuilt _id");
   //update user info in habits
   const habits = await Habit.updateMany(
     { "user.userId": user._id },
     {
       "user.username": user.username,
-      "user.userEmail": user.email,
       "user.userImage": user.image,
     },
     {

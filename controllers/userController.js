@@ -21,9 +21,9 @@ const showCurrentUserAndItsHabits = async (req, res) => {
   const user = await User.findById(req.user.userId).select(
     "username image bio habitsBuilt email _id"
   );
-  const habits = await Habit.find({ "user.userId": req.user.userId }).select(
-    "-user"
-  );
+  const habits = await Habit.find({ "user.userId": req.user.userId })
+    .select("-user")
+    .sort({ createdAt: -1 });
   res
     .status(StatusCodes.OK)
     .json({ user, habits, message: "Current User With Its Habits" });

@@ -16,11 +16,23 @@ const getAllHabits = async (req, res) => {
   habit = habit.skip(skip).limit(limit);
 
   const habits = await habit;
+
+  //making new shuffled array
+  const shuffledArray = habits.slice(); // Make a copy of the original array to avoid modifying it directly.
+  for (let i = shuffledArray.length - 1; i > 0; i--) {
+    const randomIndex = Math.floor(Math.random() * (i + 1));
+    [shuffledArray[i], shuffledArray[randomIndex]] = [
+      shuffledArray[randomIndex],
+      shuffledArray[i],
+    ];
+  }
+
+  //extra stuff
   const totalHabits = await Habit.countDocuments({});
   const totalNoOfPages = Math.ceil(totalHabits / limit);
   res
     .status(StatusCodes.OK)
-    .json({ totalHabits, totalNoOfPages, data: habits });
+    .json({ totalHabits, totalNoOfPages, data: shuffledArray });
 };
 
 const createHabit = async (req, res) => {

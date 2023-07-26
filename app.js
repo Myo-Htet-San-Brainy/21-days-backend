@@ -84,6 +84,7 @@ const start = async () => {
     app.listen(port, () => {
       console.log(`Server is listening on port ${port}...`);
     });
+    console.log("about to run cron");
     //run crons
     sixAMCron.start();
     twelvePMCron.start();

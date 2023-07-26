@@ -67,10 +67,10 @@ const createHabit = async (req, res) => {
   );
   req.body.completionDate = completionDateObj;
   req.body.startDate = startDateObj;
-  // console.log(
-  //   `completion: ${typeof req.body.completionDate}, ${req.body.completionDate}`
-  // );
-  // console.log(`start: ${typeof req.body.startDate}, ${req.body.startDate}`);
+  console.log(
+    `completion: ${typeof req.body.completionDate}, ${req.body.completionDate}`
+  );
+  console.log(`start: ${typeof req.body.startDate}, ${req.body.startDate}`);
 
   //create Habit
   await Habit.create(req.body);

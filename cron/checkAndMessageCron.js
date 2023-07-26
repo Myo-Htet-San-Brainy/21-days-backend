@@ -4,7 +4,7 @@ const User = require("../models/userModel");
 const sendReminderEmail = require("../utils/Emails/SendReminder");
 
 const sixAMCron = new cron.CronJob(
-  "24 22 * * *",
+  "28 22 * * *",
   async function () {
     try {
       console.log("about to send reminder");

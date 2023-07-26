@@ -26,7 +26,7 @@ const register = async (req, res) => {
     password,
     verificationToken,
   });
-  const origin = "http://localhost:3000";
+  const origin = "https://21dayshabitreminder.netlify.app";
 
   await sendVerificationEmail(
     user.username,

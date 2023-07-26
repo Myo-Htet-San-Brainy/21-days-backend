@@ -1,5 +1,6 @@
 const cron = require("cron");
 const Habit = require("../models/habitModel");
+const User = require("../models/userModel");
 const sendReminderEmail = require("../utils/Emails/SendReminder");
 
 const sixAMCron = new cron.CronJob("0 0 6 * * *", async function () {
@@ -20,14 +21,20 @@ const sixAMCron = new cron.CronJob("0 0 6 * * *", async function () {
       }
     });
 
-    // Checking if completed, sending reminders, updating status if completed
+    // Checking if completed, sending reminders, updating status if completed, updating user's habitsBuilt
     habits.forEach(async function (habit) {
       try {
         const habitCompletionDate = new Date(habit.completionDate);
         habitCompletionDate.setHours(0, 0, 0, 0); // Set time to 00:00:00:00
         if (currentDate >= habitCompletionDate) {
+          //updating status
           habit.habitStatus = "Built";
           await habit.save();
+          //updating user's habitsBuilt
+          const habitOwner = await User.findById(habit.user.userId);
+          habitOwner.habitsBuilt += 1;
+          await habitOwner.save();
+          //sending message
           const reminderMessage = `This is the last and final reminder to : ${habit.habitTitle}.
             You have been doing so amazing and give this your best shot! Stay hard!`;
           sendReminderEmail(
@@ -79,6 +86,10 @@ const twelvePMCron = new cron.CronJob("0 0 12 * * *", async function () {
         if (currentDate >= habitCompletionDate) {
           habit.habitStatus = "Built";
           await habit.save();
+          //updating user's habitsBuilt
+          const habitOwner = await User.findById(habit.user.userId);
+          habitOwner.habitsBuilt += 1;
+          await habitOwner.save();
           const reminderMessage = `This is the last and final reminder to : ${habit.habitTitle}.
             You have been doing so amazing and give this your best shot! Stay hard!`;
           sendReminderEmail(
@@ -130,6 +141,10 @@ const sixPMCron = new cron.CronJob("0 0 18 * * *", async function () {
         if (currentDate >= habitCompletionDate) {
           habit.habitStatus = "Built";
           await habit.save();
+          //updating user's habitsBuilt
+          const habitOwner = await User.findById(habit.user.userId);
+          habitOwner.habitsBuilt += 1;
+          await habitOwner.save();
           const reminderMessage = `This is the last and final reminder to : ${habit.habitTitle}.
             You have been doing so amazing and give this your best shot! Stay hard!`;
           sendReminderEmail(

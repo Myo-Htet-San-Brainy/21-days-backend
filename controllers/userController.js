@@ -2,6 +2,8 @@
 const { StatusCodes } = require("http-status-codes");
 const crypto = require("crypto");
 const cloudinary = require("cloudinary").v2;
+const fs = require("fs");
+const sharp = require("sharp");
 //imports
 const User = require("../models/userModel");
 const RefreshToken = require("../models/refreshTokenModel");
@@ -108,14 +110,67 @@ const getSingleUser = async (req, res) => {
 };
 
 const uploadMyImage = async (req, res) => {
-  const result = await cloudinary.uploader.upload(
-    req.files.image.tempFilePath,
-    {
-      use_filename: true,
-      folder: "21daysUserImages",
+  // //file type check
+  // const myImage = req.files.image;
+  // if (!myImage.mimetype.startsWith("image")) {
+  //   throw new customError.BadRequest("Please upload image file.");
+  // }
+  // //upload to cloudinary
+  // const result = await cloudinary.uploader.upload(
+  //   req.files.image.tempFilePath,
+  //   {
+  //     use_filename: true,
+  //     folder: "21daysUserImages",
+  //   }
+  // );
+  // //delete temp file
+  // // fs.unlinkSync(req.files.image.tempFilePath);
+  // fs.unlink(req.files.image.tempFilePath, () => {});
+
+  // res.status(StatusCodes.OK).json({ data: result.secure_url });
+  try {
+    //file type check
+    const myImage = req.files.image;
+    if (!myImage.mimetype.startsWith("image")) {
+      throw new customError.BadRequest("Please upload image file.");
     }
-  );
-  res.status(StatusCodes.OK).json({ data: result.secure_url });
+    //compress image file
+    const imageBuffer = await sharp(req.files.image.tempFilePath)
+      .resize({ width: 1200 })
+      .jpeg({ quality: 80 })
+      .toBuffer();
+
+    if (imageBuffer.length > 10 * 1024 * 1024) {
+      return res
+        .status(400)
+        .json({ error: "Image size exceeds the platform limit of 10 MB." });
+    }
+
+    // Upload the compressed image to Cloudinary with the specified options
+    cloudinary.uploader
+      .upload_stream(
+        {
+          resource_type: "image",
+          use_filename: true,
+          folder: "21daysUserImages",
+        },
+        (error, result) => {
+          if (error) {
+            return res
+              .status(500)
+              .json({ error: "Error uploading image to Cloudinary." });
+          }
+
+          // Remove the temporary file after successful upload
+          fs.unlinkSync(req.files.image.tempFilePath);
+
+          return res.status(StatusCodes.OK).json({ data: result.secure_url });
+        }
+      )
+      .end(imageBuffer);
+  } catch (error) {
+    return res.status(500).json({ error: "Error processing the image." });
+  }
 };
 
 module.exports = {

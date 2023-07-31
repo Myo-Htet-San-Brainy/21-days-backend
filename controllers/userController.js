@@ -119,15 +119,20 @@ const uploadMyImage = async (req, res) => {
       throw new customError.BadRequest("Please upload image file.");
     }
 
+    //convert path to buffer
+    var inputBuffer = await promisify(fs.readFile)(myImage.tempFilePath);
     // convert heic
-    const inputBuffer = await promisify(fs.readFile)(myImage.tempFilePath);
-    const bufferInJPEG = await convert({
-      buffer: inputBuffer, // the HEIC file buffer
-      format: "JPEG", // output format
-    });
+    //if not .heic, skip this step
+    const imageFormat = myImage.mimetype.split("/")[1];
+    if (imageFormat === "heic") {
+      inputBuffer = await convert({
+        buffer: inputBuffer, // the HEIC file buffer
+        format: "JPEG", // output format
+      });
+    }
 
     //compress image file
-    const compressedImage = await sharp(bufferInJPEG)
+    const compressedImage = await sharp(inputBuffer)
       .resize({ width: 1200 })
       .jpeg({ quality: 80 })
       .toBuffer();

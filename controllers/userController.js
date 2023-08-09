@@ -170,6 +170,7 @@ const uploadMyImage = async (req, res) => {
     return res.status(500).json({ error: "Error processing the image." });
   }
 };
+console.log("hi");
 
 module.exports = {
   showCurrentUser,

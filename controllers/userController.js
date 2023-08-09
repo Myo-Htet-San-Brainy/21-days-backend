@@ -13,6 +13,8 @@ const Habit = require("../models/habitModel");
 const { attachCookiesToResponse } = require("../utils/jwt");
 const createUserPayload = require("../utils/createUserPayload");
 const customError = require("../errors");
+// To delete(two places in total)
+const sendReminder = require("../utils/Emails/SendReminder");
 
 const showCurrentUser = async (req, res) => {
   const user = await User.findById(req.user.userId).select(
@@ -178,6 +180,11 @@ const uploadMyImage = async (req, res) => {
   }
 };
 
+const emailSendTesting = async (req, res) => {
+  await sendReminder();
+  console.log("Reminder Sent");
+};
+
 module.exports = {
   showCurrentUser,
   deleteCurrentUser,
@@ -187,6 +194,7 @@ module.exports = {
   getSingleUser,
   uploadMyImage,
   showCurrentUserAndItsHabits,
+  emailSendTesting,
 };
 
 // const createUser = async (req, res) => {

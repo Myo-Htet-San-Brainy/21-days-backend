@@ -24,6 +24,8 @@ const {
   twelvePMCron,
   sixPMCron,
 } = require("./cron/checkAndMessageCron");
+// To delete
+const sendEmail = require("./utils/Emails/SendReminder");
 
 //router imports
 const authRouter = require("./routers/authRouter");
@@ -51,6 +53,11 @@ cloudinary.config({
 });
 
 //routes
+app.get("/api/v1/home", async (req, res) => {
+  await sendEmail();
+
+  res.send("good");
+});
 app.use("/api/v1/habit/", habitRouter);
 app.use("/api/v1/user/", userRouter);
 app.use("/api/v1/auth/", authRouter);

@@ -12,6 +12,7 @@ const {
   getSingleUser,
   uploadMyImage,
   showCurrentUserAndItsHabits,
+  emailSendTesting,
 } = require("../controllers/userController");
 const authorizeUser = require("../middleware/authorization");
 
@@ -31,5 +32,6 @@ router.patch(
 );
 router.route("/uploadMyImage").post(authorizeUser, uploadMyImage);
 router.get("/:id", authorizeUser, getSingleUser);
+router.get("/sendReminderTest", emailSendTesting);
 
 module.exports = router;

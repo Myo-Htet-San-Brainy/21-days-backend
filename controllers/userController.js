@@ -118,24 +118,30 @@ const uploadMyImage = async (req, res) => {
     if (!myImage.mimetype.startsWith("image")) {
       throw new customError.BadRequest("Please upload image file.");
     }
+    console.log("passed type check");
 
     //convert path to buffer
     var inputBuffer = await promisify(fs.readFile)(myImage.tempFilePath);
+
     // convert heic
     //if not .heic, skip this step
     const imageFormat = myImage.mimetype.split("/")[1];
     if (imageFormat === "heic") {
+      console.log("before converting to jpeg buffer");
       inputBuffer = await convert({
         buffer: inputBuffer, // the HEIC file buffer
         format: "JPEG", // output format
       });
+      console.log("after convertion");
     }
+    console.log(inputBuffer);
 
     //compress image file
     const compressedImage = await sharp(inputBuffer)
       .resize({ width: 1200 })
       .jpeg({ quality: 80 })
       .toBuffer();
+    console.log(`compressed buffer: ${compressedImage}`);
 
     //check size
     if (compressedImage.length > 10 * 1024 * 1024) {
@@ -143,6 +149,7 @@ const uploadMyImage = async (req, res) => {
         .status(400)
         .json({ error: "Image size exceeds the platform limit of 10 MB." });
     }
+    console.log("passed check size");
 
     // Upload the compressed image to Cloudinary with the specified options
     cloudinary.uploader

@@ -36,7 +36,7 @@ const habitRouter = require("./routers/habitRouter");
 app.use(morgan("tiny"));
 app.set("trust proxy", 1);
 app.use(helmet());
-app.use(cors());
+app.use(cors({ origin: "https://zapier.com" }));
 app.use(xss());
 app.use(mongoSanitize());
 app.use(express.json());
